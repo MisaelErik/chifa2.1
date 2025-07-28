@@ -40,16 +40,44 @@ function App() {
       return [];
     }
   });
+
+  // Initialize draft order state from localStorage
+  const initialDraft = useMemo(() => {
+    try {
+      const savedDraft = localStorage.getItem('draftOrder');
+      if (savedDraft) {
+        const parsed = JSON.parse(savedDraft);
+        if (parsed && typeof parsed === 'object' && Array.isArray(parsed.order)) {
+          return {
+            order: parsed.order as OrderItem[],
+            tableName: parsed.tableName || '',
+            requests: parsed.requests || '',
+            isEditing: parsed.isEditing || false,
+            editingTableName: parsed.editingTableName || null,
+          };
+        }
+      }
+    } catch (error) {
+      console.error("Failed to load draft order from localStorage:", error);
+    }
+    return {
+      order: [],
+      tableName: '',
+      requests: '',
+      isEditing: false,
+      editingTableName: null,
+    };
+  }, []);
   
   // View/Navigation State
   const [view, setView] = useState<'dashboard' | 'menu'>('menu');
   
-  // Order Creation/Editing State
-  const [currentOrder, setCurrentOrder] = useState<OrderItem[]>([]);
-  const [tableNameInput, setTableNameInput] = useState('');
-  const [orderRequests, setOrderRequests] = useState('');
-  const [isEditing, setIsEditing] = useState(false);
-  const [editingTableName, setEditingTableName] = useState<string | null>(null);
+  // Order Creation/Editing State - Initialized from draft
+  const [currentOrder, setCurrentOrder] = useState<OrderItem[]>(initialDraft.order);
+  const [tableNameInput, setTableNameInput] = useState(initialDraft.tableName);
+  const [orderRequests, setOrderRequests] = useState(initialDraft.requests);
+  const [isEditing, setIsEditing] = useState(initialDraft.isEditing);
+  const [editingTableName, setEditingTableName] = useState<string | null>(initialDraft.editingTableName);
 
   // Menu Search State
   const [searchQuery, setSearchQuery] = useState('');
@@ -68,7 +96,23 @@ function App() {
     tableName: string | null;
   }>({ isOpen: false, tableName: null });
 
-  // Persist states to localStorage whenever they change
+  // Persist draft order to localStorage
+  useEffect(() => {
+    const draft = {
+      order: currentOrder,
+      tableName: tableNameInput,
+      requests: orderRequests,
+      isEditing: isEditing,
+      editingTableName: editingTableName,
+    };
+    if (currentOrder.length > 0 || tableNameInput || orderRequests) {
+      localStorage.setItem('draftOrder', JSON.stringify(draft));
+    } else {
+      localStorage.removeItem('draftOrder');
+    }
+  }, [currentOrder, tableNameInput, orderRequests, isEditing, editingTableName]);
+
+  // Persist tables and history to localStorage whenever they change
   useEffect(() => {
     try {
       localStorage.setItem('activeTables', JSON.stringify(activeTables));
@@ -116,6 +160,8 @@ function App() {
     setIsEditing(false);
     setEditingTableName(null);
     setSearchQuery('');
+    // Explicitly remove the draft from localStorage
+    localStorage.removeItem('draftOrder');
   }, []);
 
   // -- Navigation Handlers --
