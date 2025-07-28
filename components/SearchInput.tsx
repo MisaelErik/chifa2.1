@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { SearchIcon, XCircleIcon } from './icons';
 
@@ -9,12 +8,21 @@ interface SearchInputProps {
 }
 
 const SearchInput: React.FC<SearchInputProps> = ({ value, onChange, onClear }) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Hide mobile keyboard on "Enter" or "Search" press
+    if (e.key === 'Enter') {
+      e.currentTarget.blur();
+    }
+  };
+
   return (
     <div className="relative">
       <input
         type="text"
         value={value}
         onChange={onChange}
+        onKeyDown={handleKeyDown}
+        enterKeyHint="search"
         className="w-full p-4 pl-12 pr-12 text-lg text-slate-900 bg-white border-2 border-slate-200 rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-shadow"
         placeholder="Buscar por código o nombre del plato..."
       />
