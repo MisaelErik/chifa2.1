@@ -137,7 +137,6 @@ function App() {
     const normalizedQuery = removeAccents(query);
 
     return menuData.filter(dish => {
-        const isCombo = dish.category.toLowerCase().includes('combos');
         const normalizedDishName = removeAccents(dish.name.toLowerCase());
         const dishCode = dish.code.toLowerCase();
         
@@ -145,7 +144,15 @@ function App() {
             return true;
         }
 
-        if (!isCombo && normalizedDishName.startsWith(normalizedQuery)) {
+        if (normalizedDishName.includes(normalizedQuery)) {
+            return true;
+        }
+
+        if (dish.keywords?.some(keyword => removeAccents(keyword.toLowerCase()).includes(normalizedQuery))) {
+            return true;
+        }
+        
+        if (dish.items?.some(item => removeAccents(item.toLowerCase()).includes(normalizedQuery))) {
             return true;
         }
         
