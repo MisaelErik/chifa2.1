@@ -7,6 +7,8 @@ export interface Dish {
   items?: string[]; // For combos, lists the individual dishes
   description?: string;
   ingredients?: string[];
+  variations?: string[];
+  keywords?: string[];
 }
 
 export interface OrderItem extends Dish {
